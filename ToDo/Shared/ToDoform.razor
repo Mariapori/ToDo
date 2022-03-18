@@ -85,7 +85,7 @@
         db.Todos.Add(todo);
         db.SaveChanges();
         kuvaus = null;
-        StateHasChanged();
+        Todos.Add(todo);
     }
 
     public void Dispose()
@@ -109,6 +109,7 @@
             db.Todos.Update(drag);
             db.SaveChanges();
             drag = null;
+            StateHasChanged();
         }
     }
 
@@ -117,9 +118,9 @@
         if(poistettava != null)
         {
             db.Todos.Remove(poistettava);
-            db.SaveChanges(); 
+            db.SaveChanges();
+            Todos.Remove(poistettava);
         }
-        StateHasChanged();
 
     }
 
