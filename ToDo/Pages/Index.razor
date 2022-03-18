@@ -1,0 +1,17 @@
+﻿@page "/"
+
+<PageTitle>Etusivu</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <h1>Tehtävät</h1>
+        <ToDoform></ToDoform>
+    </Authorized>
+    <NotAuthorized>
+        <div class="container">
+            <div class="justify-content-lg-center">
+                        <h1 class="justify-content-lg-center">Kirjaudu sisään nähdäksesi ja luodaksesi tehtäviä.</h1>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>

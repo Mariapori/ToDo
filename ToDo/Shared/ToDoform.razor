@@ -1,0 +1,132 @@
+﻿@using Microsoft.EntityFrameworkCore
+@using ToDo.Data
+@implements IDisposable
+@inject AuthenticationStateProvider context
+@inject IDbContextFactory<todosorsaContext> DbFactory
+@inject IJSRuntime JSRuntime
+
+<div class="row row-cols-3">
+    <div class="col-xl bg-info" ondragover="event.preventDefault()" @ondrop="()=> Tiputa(Tila.ToDo)">
+        <h3 style="text-align: center; padding: 5px;">TODO</h3>
+        <ul title="TODO" class="list-unstyled">
+            @foreach(var todo in Todos.Where(o => o.Tila == Tila.ToDo))
+            {
+                <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)" >
+                    <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
+                    @todo.Kuvaus<br/>
+                    <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
+                    </li>
+            }
+        </ul>
+    </div>
+        <div class="col-xl bg-danger" ondragover="event.preventDefault()" @ondrop="()=> Tiputa(Tila.Aloitettu)">
+                    <h3 style="text-align: center; padding: 5px;">Aloitettu</h3>
+                    <ul title="Aloitettu" class="list-unstyled">
+            @foreach(var todo in Todos.Where(o => o.Tila == Tila.Aloitettu))
+            {
+                <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
+                                        <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
+                    @todo.Kuvaus<br/>
+                    <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
+                    </li>
+            }
+        </ul>
+    </div>
+        <div class="col-xl bg-success" ondragover="event.preventDefault()" @ondrop="()=> Tiputa(Tila.Valmis)">
+                    <h3 style="text-align: center; padding: 5px;">Valmis</h3>
+                    <ul title="Valmis" class="list-unstyled">
+            @foreach(var todo in Todos.Where(o => o.Tila == Tila.Valmis))
+            {
+                <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
+                                        <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
+                    @todo.Kuvaus<br/>
+                    <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
+                    </li>
+            }
+        </ul>
+    </div>
+</div>
+
+<h3>Lisää uusi tehtävä</h3>
+<textarea class="form-control" rows="2" name="kuvaus" @bind=kuvaus required></textarea><br />
+<button class="btn btn-dark" @onclick=LisaaTehtava>Lisää</button>
+
+
+@code {
+    private string? kuvaus;
+    private string? user;
+    private todosorsaContext? db;
+    private List<todo> Todos = new List<todo>();
+    private todo? drag;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authstate = await context.GetAuthenticationStateAsync();
+        user = authstate?.User?.Identity?.Name ?? null;
+        db = await DbFactory.CreateDbContextAsync();
+        Todos = db.Todos.Where(o => o.Luoja == user).ToList();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        Todos = db.Todos.Where(o => o.Luoja == user).ToList();
+        StateHasChanged();
+    }
+
+    public void LisaaTehtava()
+    {
+        var todo = new todo();
+        todo.Kuvaus = kuvaus;
+        todo.Luotu = DateTime.Now;
+        todo.Muokattu = DateTime.Now;
+        todo.Luoja = user;
+        todo.Tila = Tila.ToDo;
+
+        db.Todos.Add(todo);
+        db.SaveChanges();
+        kuvaus = null;
+    }
+
+    public void Dispose()
+    {
+        db?.Dispose();
+    }
+    public void Raahaa(todo raahattu)
+    {
+        if(raahattu != null)
+        {
+            drag = raahattu;
+        }
+    }
+    public void Tiputa(Tila tila)
+    {
+
+        if(drag != null && tila != drag.Tila)
+        {
+            drag.Tila = tila;
+            drag.Muokattu = DateTime.Now;
+            db.Todos.Update(drag);
+            db.SaveChanges();
+            drag = null;
+        }
+    }
+
+    public void Poista(todo poistettava)
+    {
+        if(poistettava != null)
+        {
+            db.Todos.Remove(poistettava);
+            db.SaveChanges(); 
+        }
+
+    }
+    public void Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            LisaaTehtava();
+        }
+}
+
+}
