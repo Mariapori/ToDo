@@ -71,7 +71,6 @@
     protected override void OnAfterRender(bool firstRender)
     {
         Todos = db.Todos.Where(o => o.Luoja == user).ToList();
-        StateHasChanged();
     }
 
     public void LisaaTehtava()
@@ -86,6 +85,7 @@
         db.Todos.Add(todo);
         db.SaveChanges();
         kuvaus = null;
+        StateHasChanged();
     }
 
     public void Dispose()
@@ -119,14 +119,8 @@
             db.Todos.Remove(poistettava);
             db.SaveChanges(); 
         }
+        StateHasChanged();
 
     }
-    public void Enter(KeyboardEventArgs e)
-    {
-        if (e.Code == "Enter" || e.Code == "NumpadEnter")
-        {
-            LisaaTehtava();
-        }
-}
 
 }
