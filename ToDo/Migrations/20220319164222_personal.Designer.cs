@@ -2,17 +2,19 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDo.Data;
 
 #nullable disable
 
-namespace ToDo.Migrations.todosorsa
+namespace ToDo.Migrations
 {
     [DbContext(typeof(todosorsaContext))]
-    partial class todosorsaContextModelSnapshot : ModelSnapshot
+    [Migration("20220319164222_personal")]
+    partial class personal
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -220,6 +222,28 @@ namespace ToDo.Migrations.todosorsa
                     b.ToTable("aspnetusertokens", (string)null);
                 });
 
+            modelBuilder.Entity("ToDo.Data.SharedTodo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kuvaus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Luoja")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Luotu")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SharedTodos");
+                });
+
             modelBuilder.Entity("ToDo.Data.todo", b =>
                 {
                     b.Property<int>("Id")
@@ -240,12 +264,39 @@ namespace ToDo.Migrations.todosorsa
                     b.Property<DateTime>("Muokattu")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<bool>("Personal")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int?>("SharedTodoId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Tila")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SharedTodoId");
+
                     b.ToTable("Todos");
+                });
+
+            modelBuilder.Entity("ToDo.Data.todoMember", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("SharedTodoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SharedTodoId");
+
+                    b.ToTable("todoMember");
                 });
 
             modelBuilder.Entity("Aspnetuserrole", b =>
@@ -313,6 +364,20 @@ namespace ToDo.Migrations.todosorsa
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("ToDo.Data.todo", b =>
+                {
+                    b.HasOne("ToDo.Data.SharedTodo", null)
+                        .WithMany("Tehtavat")
+                        .HasForeignKey("SharedTodoId");
+                });
+
+            modelBuilder.Entity("ToDo.Data.todoMember", b =>
+                {
+                    b.HasOne("ToDo.Data.SharedTodo", null)
+                        .WithMany("Jasenet")
+                        .HasForeignKey("SharedTodoId");
+                });
+
             modelBuilder.Entity("ToDo.Aspnetrole", b =>
                 {
                     b.Navigation("Aspnetroleclaims");
@@ -325,6 +390,13 @@ namespace ToDo.Migrations.todosorsa
                     b.Navigation("Aspnetuserlogins");
 
                     b.Navigation("Aspnetusertokens");
+                });
+
+            modelBuilder.Entity("ToDo.Data.SharedTodo", b =>
+                {
+                    b.Navigation("Jasenet");
+
+                    b.Navigation("Tehtavat");
                 });
 #pragma warning restore 612, 618
         }

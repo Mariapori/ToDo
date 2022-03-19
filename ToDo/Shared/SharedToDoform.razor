@@ -5,11 +5,22 @@
 @inject IDbContextFactory<todosorsaContext> DbFactory
 @inject IJSRuntime JSRuntime
 
-<div class="row row-cols-3">
+<label>ToDo listat</label>
+<select @onchange="(asd) => Vaihda(asd)">
+    <option value="0">Valitse ToDo lista</option>
+    @foreach(var item in Todos.OrderBy(o => o.Kuvaus))
+    {
+        <option value="@item.Id">@item.Kuvaus</option>
+    }
+</select>
+
+@if(valittu != null){
+    <h3>@valittu.Kuvaus</h3>
+    <div class="row row-cols-3">
     <div class="col-xl bg-info" ondragover="event.preventDefault()" @ondrop="()=> Tiputa(Tila.ToDo)">
         <h3 style="text-align: center; padding: 5px;">TODO</h3>
         <ul title="TODO" class="list-unstyled">
-            @foreach(var todo in Todos.Where(o => o.Tila == Tila.ToDo))
+            @foreach(var todo in valittu?.Tehtavat?.Where(o => o.Tila == Tila.ToDo))
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)" >
                     <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
@@ -22,7 +33,7 @@
         <div class="col-xl bg-danger" ondragover="event.preventDefault()" @ondrop="()=> Tiputa(Tila.Aloitettu)">
                     <h3 style="text-align: center; padding: 5px;">Aloitettu</h3>
                     <ul title="Aloitettu" class="list-unstyled">
-            @foreach(var todo in Todos.Where(o => o.Tila == Tila.Aloitettu))
+            @foreach(var todo in valittu?.Tehtavat?.Where(o => o.Tila == Tila.Aloitettu))
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
                                         <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
@@ -35,7 +46,7 @@
         <div class="col-xl bg-success" ondragover="event.preventDefault()" @ondrop="()=> Tiputa(Tila.Valmis)">
                     <h3 style="text-align: center; padding: 5px;">Valmis</h3>
                     <ul title="Valmis" class="list-unstyled">
-            @foreach(var todo in Todos.Where(o => o.Tila == Tila.Valmis))
+            @foreach(var todo in valittu?.Tehtavat?.Where(o => o.Tila == Tila.Valmis))
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
                                         <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
@@ -51,13 +62,17 @@
 <textarea class="form-control" rows="2" name="kuvaus" @bind=kuvaus required></textarea><br />
 <button class="btn btn-dark" @onclick=LisaaTehtava>Lisää</button>
 
+}
+
+
 
 @code {
     private string? kuvaus;
     private string? user;
     private todosorsaContext? db;
-    private List<todo> Todos = new List<todo>();
+    private List<SharedTodo> Todos = new List<SharedTodo>();
     private todo? drag;
+    private SharedTodo? valittu;
 
 
     protected override async Task OnInitializedAsync()
@@ -65,12 +80,12 @@
         var authstate = await context.GetAuthenticationStateAsync();
         user = authstate?.User?.Identity?.Name ?? null;
         db = await DbFactory.CreateDbContextAsync();
-        Todos = db.Todos.Where(o => o.Luoja == user && o.Personal == true).ToList();
+        Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user).ToList();
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        Todos = db.Todos.Where(o => o.Luoja == user && o.Personal == true).ToList();
+        Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user).ToList();
     }
 
     public void LisaaTehtava()
@@ -81,12 +96,10 @@
         todo.Muokattu = DateTime.Now;
         todo.Luoja = user;
         todo.Tila = Tila.ToDo;
-        todo.Personal = true;
-
-        db.Todos.Add(todo);
+        todo.Personal = false;
+        valittu.Tehtavat.Add(todo);
         db.SaveChanges();
         kuvaus = null;
-        Todos.Add(todo);
     }
 
     public void Dispose()
@@ -118,9 +131,22 @@
     {
         if(poistettava != null)
         {
-            db.Todos.Remove(poistettava);
+            valittu.Tehtavat.Remove(poistettava);
             db.SaveChanges();
-            Todos.Remove(poistettava);
+        }
+
+    }
+
+    public void Vaihda(ChangeEventArgs args)
+    {
+        int id = int.Parse(args.Value.ToString());
+        if(id > 0)
+        {
+            valittu = Todos.FirstOrDefault(o => o.Id == id);
+        }
+        else
+        {
+            valittu = null;
         }
 
     }

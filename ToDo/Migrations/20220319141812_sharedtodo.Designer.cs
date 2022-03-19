@@ -8,11 +8,11 @@ using ToDo.Data;
 
 #nullable disable
 
-namespace ToDo.Migrations.todosorsa
+namespace ToDo.Migrations
 {
     [DbContext(typeof(todosorsaContext))]
-    [Migration("20220318172911_todos")]
-    partial class todos
+    [Migration("20220319141812_sharedtodo")]
+    partial class sharedtodo
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -222,6 +222,28 @@ namespace ToDo.Migrations.todosorsa
                     b.ToTable("aspnetusertokens", (string)null);
                 });
 
+            modelBuilder.Entity("ToDo.Data.SharedTodo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    b.Property<string>("Kuvaus")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Luoja")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Luotu")
+                        .HasColumnType("datetime(6)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SharedTodos");
+                });
+
             modelBuilder.Entity("ToDo.Data.todo", b =>
                 {
                     b.Property<int>("Id")
@@ -232,9 +254,9 @@ namespace ToDo.Migrations.todosorsa
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<string>("LuojaId")
+                    b.Property<string>("Luoja")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("longtext");
 
                     b.Property<DateTime>("Luotu")
                         .HasColumnType("datetime(6)");
@@ -242,14 +264,36 @@ namespace ToDo.Migrations.todosorsa
                     b.Property<DateTime>("Muokattu")
                         .HasColumnType("datetime(6)");
 
+                    b.Property<int?>("SharedTodoId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Tila")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("LuojaId");
+                    b.HasIndex("SharedTodoId");
 
                     b.ToTable("Todos");
+                });
+
+            modelBuilder.Entity("ToDo.Data.todoMember", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int?>("SharedTodoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SharedTodoId");
+
+                    b.ToTable("todoMember");
                 });
 
             modelBuilder.Entity("Aspnetuserrole", b =>
@@ -319,13 +363,16 @@ namespace ToDo.Migrations.todosorsa
 
             modelBuilder.Entity("ToDo.Data.todo", b =>
                 {
-                    b.HasOne("ToDo.Aspnetuser", "Luoja")
-                        .WithMany()
-                        .HasForeignKey("LuojaId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasOne("ToDo.Data.SharedTodo", null)
+                        .WithMany("Tehtavat")
+                        .HasForeignKey("SharedTodoId");
+                });
 
-                    b.Navigation("Luoja");
+            modelBuilder.Entity("ToDo.Data.todoMember", b =>
+                {
+                    b.HasOne("ToDo.Data.SharedTodo", null)
+                        .WithMany("Jasenet")
+                        .HasForeignKey("SharedTodoId");
                 });
 
             modelBuilder.Entity("ToDo.Aspnetrole", b =>
@@ -340,6 +387,13 @@ namespace ToDo.Migrations.todosorsa
                     b.Navigation("Aspnetuserlogins");
 
                     b.Navigation("Aspnetusertokens");
+                });
+
+            modelBuilder.Entity("ToDo.Data.SharedTodo", b =>
+                {
+                    b.Navigation("Jasenet");
+
+                    b.Navigation("Tehtavat");
                 });
 #pragma warning restore 612, 618
         }

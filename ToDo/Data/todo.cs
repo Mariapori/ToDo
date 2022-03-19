@@ -12,6 +12,7 @@ namespace ToDo.Data
         public DateTime Luotu { get; set; }
 
         public string Luoja { get; set; }
+        public bool Personal { get; set; }
 
     }
 

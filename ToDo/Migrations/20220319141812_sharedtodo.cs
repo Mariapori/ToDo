@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ToDo.Migrations.todosorsa
+namespace ToDo.Migrations
 {
-    public partial class todos : Migration
+    public partial class sharedtodo : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -65,6 +65,25 @@ namespace ToDo.Migrations.todosorsa
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_aspnetusers", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_general_ci");
+
+            migrationBuilder.CreateTable(
+                name: "SharedTodos",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Kuvaus = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Luoja = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Luotu = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SharedTodos", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4")
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
@@ -205,6 +224,28 @@ namespace ToDo.Migrations.todosorsa
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
 
             migrationBuilder.CreateTable(
+                name: "todoMember",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Email = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SharedTodoId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_todoMember", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_todoMember_SharedTodos_SharedTodoId",
+                        column: x => x.SharedTodoId,
+                        principalTable: "SharedTodos",
+                        principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4")
+                .Annotation("Relational:Collation", "utf8mb4_general_ci");
+
+            migrationBuilder.CreateTable(
                 name: "Todos",
                 columns: table => new
                 {
@@ -215,18 +256,18 @@ namespace ToDo.Migrations.todosorsa
                     Tila = table.Column<int>(type: "int", nullable: false),
                     Muokattu = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     Luotu = table.Column<DateTime>(type: "datetime(6)", nullable: false),
-                    LuojaId = table.Column<string>(type: "varchar(255)", nullable: false, collation: "utf8mb4_general_ci")
-                        .Annotation("MySql:CharSet", "utf8mb4")
+                    Luoja = table.Column<string>(type: "longtext", nullable: false, collation: "utf8mb4_general_ci")
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    SharedTodoId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Todos", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Todos_aspnetusers_LuojaId",
-                        column: x => x.LuojaId,
-                        principalTable: "aspnetusers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "FK_Todos_SharedTodos_SharedTodoId",
+                        column: x => x.SharedTodoId,
+                        principalTable: "SharedTodos",
+                        principalColumn: "Id");
                 })
                 .Annotation("MySql:CharSet", "utf8mb4")
                 .Annotation("Relational:Collation", "utf8mb4_general_ci");
@@ -269,9 +310,14 @@ namespace ToDo.Migrations.todosorsa
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_Todos_LuojaId",
+                name: "IX_todoMember_SharedTodoId",
+                table: "todoMember",
+                column: "SharedTodoId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Todos_SharedTodoId",
                 table: "Todos",
-                column: "LuojaId");
+                column: "SharedTodoId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -292,6 +338,9 @@ namespace ToDo.Migrations.todosorsa
                 name: "aspnetusertokens");
 
             migrationBuilder.DropTable(
+                name: "todoMember");
+
+            migrationBuilder.DropTable(
                 name: "Todos");
 
             migrationBuilder.DropTable(
@@ -299,6 +348,9 @@ namespace ToDo.Migrations.todosorsa
 
             migrationBuilder.DropTable(
                 name: "aspnetusers");
+
+            migrationBuilder.DropTable(
+                name: "SharedTodos");
         }
     }
 }

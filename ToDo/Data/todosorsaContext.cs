@@ -14,7 +14,7 @@ namespace ToDo.Data
         public todosorsaContext(DbContextOptions<todosorsaContext> options)
             : base(options)
         {
-            Database.EnsureCreated();
+            //Database.EnsureCreated();
         }
 
         public virtual DbSet<Aspnetrole> Aspnetroles { get; set; } = null!;
@@ -24,6 +24,7 @@ namespace ToDo.Data
         public virtual DbSet<Aspnetuserlogin> Aspnetuserlogins { get; set; } = null!;
         public virtual DbSet<Aspnetusertoken> Aspnetusertokens { get; set; } = null!;
         public virtual DbSet<todo> Todos { get; set; } = null!;
+        public virtual DbSet<SharedTodo> SharedTodos { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
