@@ -13,6 +13,7 @@ namespace ToDo.Data
 
         public string Luoja { get; set; }
         public bool Personal { get; set; }
+        public string? Muokkaaja { get; set; }
 
     }
 

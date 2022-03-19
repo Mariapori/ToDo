@@ -13,7 +13,7 @@
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)" >
                     <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
-                    @todo.Kuvaus<br/>
+                    <strong>@todo.Kuvaus</strong><br/>
                     <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
                     </li>
             }
@@ -26,7 +26,7 @@
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
                                         <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
-                    @todo.Kuvaus<br/>
+                    <strong>@todo.Kuvaus</strong><br/>
                     <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
                     </li>
             }
@@ -39,7 +39,7 @@
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
                                         <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
-                    @todo.Kuvaus<br/>
+                    <strong>@todo.Kuvaus</strong><br/>
                     <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
                     </li>
             }

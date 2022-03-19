@@ -5,7 +5,10 @@
 @inject IDbContextFactory<todosorsaContext> DbFactory
 @inject IJSRuntime JSRuntime
 
-<label>ToDo listat</label>
+
+@if(todoMembers == null)
+{
+    <label>ToDo listat</label>
 <select @onchange="(asd) => Vaihda(asd)">
     <option value="0">Valitse ToDo lista</option>
     @foreach(var item in Todos.OrderBy(o => o.Kuvaus))
@@ -13,6 +16,16 @@
         <option value="@item.Id">@item.Kuvaus</option>
     }
 </select>
+    @if(valittu != null)
+    {
+        <br />
+        <label>Vain omat merkinnät </label><input type="checkbox" @onchange="(onko) => VainOmat(onko)"/>
+    }
+<br />
+<hr />
+}
+
+
 
 @if(valittu != null){
     <h3>@valittu.Kuvaus</h3>
@@ -24,8 +37,13 @@
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)" >
                     <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
-                    @todo.Kuvaus<br/>
+                    <strong>@todo.Kuvaus</strong><br/>
                     <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
+                                            @if(todo.Muokkaaja != null)
+                        {
+                           <br /> <small>Viimeksi päivittänyt: @todo.Muokkaaja</small>
+                        }
+                       <br/> <small>Luonut: @todo.Luoja</small>
                     </li>
             }
         </ul>
@@ -37,8 +55,13 @@
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
                                         <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
-                    @todo.Kuvaus<br/>
+                    <strong>@todo.Kuvaus</strong><br/>
                     <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
+                        @if(todo.Muokkaaja != null)
+                        {
+                          <br />  <small>Viimeksi päivittänyt: @todo.Muokkaaja</small>
+                        }
+                        <br /><small>Luonut: @todo.Luoja</small>
                     </li>
             }
         </ul>
@@ -50,8 +73,13 @@
             {
                 <li class="bg-white bg-opacity-50 m-5 p-5 position-relative" draggable="true" @ondragstart="()=> Raahaa(todo)" @ondragend="() => Raahaa(todo)">
                                         <h2 style="position: absolute; top: 0px; right: 3px;" @onclick="() => Poista(todo)">X</h2>
-                    @todo.Kuvaus<br/>
+                    <strong>@todo.Kuvaus</strong><br/>
                     <small>Päivitetty: @todo.Muokattu.ToString("dd.MM.yyyy HH:mm", System.Globalization.CultureInfo.InvariantCulture)</small>
+                                            @if(todo.Muokkaaja != null)
+                        {
+                          <br />  <small>Viimeksi päivittänyt: @todo.Muokkaaja</small>
+                        }
+                        <br /><small>Luonut: @todo.Luoja</small>
                     </li>
             }
         </ul>
@@ -61,6 +89,40 @@
 <h3>Lisää uusi tehtävä</h3>
 <textarea class="form-control" rows="2" name="kuvaus" @bind=kuvaus required></textarea><br />
 <button class="btn btn-dark" @onclick=LisaaTehtava>Lisää</button>
+    }
+@if(todoMembers == null && valittu == null)
+{
+    <button class="btn btn-dark" @onclick="() => todoMembers = new List<todoMember>()">Lisää uusi jaettu todo-lista</button>
+}    
+    @if(todoMembers != null)
+    {
+        <label>ToDo-listan nimi</label>
+            <textarea class="form-control" rows="2" name="uusiKuvaus" @bind=uusiKuvaus required></textarea><br />
+<h5>Henkilöt:</h5>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>
+                <button class="btn btn-dark" @onclick="() => UusiHenkilo(new todoMember())">Uusi henkilö</button>
+            </th>
+        </tr>
+        <tr>
+            <th>Sähköposti</th>
+        </tr>
+    </thead>
+    <tbody>
+
+                @foreach(var item in todoMembers)
+                    {
+                     <tr>
+                        <td><input type="text" @bind-value=item.Email></td>
+                     </tr>
+                    }
+            
+
+        </tbody>
+</table>
+<button class="btn btn-dark" @onclick=LisaaJaettuTodo>Lisää</button>
 
 }
 
@@ -73,19 +135,25 @@
     private List<SharedTodo> Todos = new List<SharedTodo>();
     private todo? drag;
     private SharedTodo? valittu;
-
+    private SharedTodo? uusi;
+    private string? uusiKuvaus;
+    private List<todoMember>? todoMembers;
+    private todoMember? uusiHenkilo;
+    private List<int>? memberOf;
+    private List<todo>? alkuperaiset;
 
     protected override async Task OnInitializedAsync()
     {
         var authstate = await context.GetAuthenticationStateAsync();
         user = authstate?.User?.Identity?.Name ?? null;
         db = await DbFactory.CreateDbContextAsync();
-        Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user).ToList();
+        memberOf = db.TodoMembers.Include(o => o.SharedTodo).Where(o => o.Email == user).Select(o => o.SharedTodo.Id).ToList();
+        Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user || memberOf.Contains(o.Id)).ToList();
     }
 
     protected override void OnAfterRender(bool firstRender)
     {
-        Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user).ToList();
+        Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user || memberOf.Contains(o.Id)).ToList();
     }
 
     public void LisaaTehtava()
@@ -100,6 +168,21 @@
         valittu.Tehtavat.Add(todo);
         db.SaveChanges();
         kuvaus = null;
+    }
+
+    public void LisaaJaettuTodo()
+    {
+        var sharedTodo = new SharedTodo();
+        sharedTodo.Kuvaus = uusiKuvaus;
+        sharedTodo.Luoja = user;
+        sharedTodo.Luotu = DateTime.Now;
+        sharedTodo.Tehtavat = new List<todo>();
+        sharedTodo.Jasenet = todoMembers;
+        db.SharedTodos.Add(sharedTodo);
+        db.SaveChanges();
+        uusiKuvaus = null;
+        todoMembers = null;
+        StateHasChanged();
     }
 
     public void Dispose()
@@ -120,6 +203,7 @@
         {
             drag.Tila = tila;
             drag.Muokattu = DateTime.Now;
+            drag.Muokkaaja = user;
             db.Todos.Update(drag);
             db.SaveChanges();
             drag = null;
@@ -147,6 +231,27 @@
         else
         {
             valittu = null;
+        }
+
+    }
+    public void UusiHenkilo(todoMember uus)
+    {
+        if(uus != null)
+        {
+            todoMembers.Add(uus);
+        }
+    }
+    public void VainOmat(ChangeEventArgs args)
+    {
+        bool onko = Boolean.Parse(args.Value.ToString());
+        if(onko)
+        {
+            alkuperaiset = valittu.Tehtavat;
+            valittu.Tehtavat = valittu.Tehtavat.Where(o => o.Luoja == user).ToList();
+        }
+        else
+        {
+            valittu.Tehtavat = alkuperaiset;
         }
 
     }

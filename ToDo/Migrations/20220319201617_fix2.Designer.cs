@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDo.Data;
 
@@ -10,9 +11,10 @@ using ToDo.Data;
 namespace ToDo.Migrations
 {
     [DbContext(typeof(todosorsaContext))]
-    partial class todosorsaContextModelSnapshot : ModelSnapshot
+    [Migration("20220319201617_fix2")]
+    partial class fix2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -262,9 +264,6 @@ namespace ToDo.Migrations
                     b.Property<DateTime>("Muokattu")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Muokkaaja")
-                        .HasColumnType("longtext");
-
                     b.Property<bool>("Personal")
                         .HasColumnType("tinyint(1)");
 
@@ -291,7 +290,7 @@ namespace ToDo.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.Property<int>("SharedTodoId")
+                    b.Property<int?>("SharedTodoId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -375,13 +374,9 @@ namespace ToDo.Migrations
 
             modelBuilder.Entity("ToDo.Data.todoMember", b =>
                 {
-                    b.HasOne("ToDo.Data.SharedTodo", "SharedTodo")
+                    b.HasOne("ToDo.Data.SharedTodo", null)
                         .WithMany("Jasenet")
-                        .HasForeignKey("SharedTodoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SharedTodo");
+                        .HasForeignKey("SharedTodoId");
                 });
 
             modelBuilder.Entity("ToDo.Aspnetrole", b =>

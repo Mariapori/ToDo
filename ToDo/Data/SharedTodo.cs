@@ -16,7 +16,8 @@ namespace ToDo.Data
 
     public class todoMember
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string Email { get; set; }
+        public SharedTodo SharedTodo { get; set; }
     }
 }

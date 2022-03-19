@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDo.Data;
 
@@ -10,9 +11,10 @@ using ToDo.Data;
 namespace ToDo.Migrations
 {
     [DbContext(typeof(todosorsaContext))]
-    partial class todosorsaContextModelSnapshot : ModelSnapshot
+    [Migration("20220319202458_fix3")]
+    partial class fix3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,9 +263,6 @@ namespace ToDo.Migrations
 
                     b.Property<DateTime>("Muokattu")
                         .HasColumnType("datetime(6)");
-
-                    b.Property<string>("Muokkaaja")
-                        .HasColumnType("longtext");
 
                     b.Property<bool>("Personal")
                         .HasColumnType("tinyint(1)");

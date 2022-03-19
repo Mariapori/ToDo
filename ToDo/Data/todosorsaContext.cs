@@ -25,6 +25,7 @@ namespace ToDo.Data
         public virtual DbSet<Aspnetusertoken> Aspnetusertokens { get; set; } = null!;
         public virtual DbSet<todo> Todos { get; set; } = null!;
         public virtual DbSet<SharedTodo> SharedTodos { get; set; } = null!;
+        public virtual DbSet<todoMember> TodoMembers { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
