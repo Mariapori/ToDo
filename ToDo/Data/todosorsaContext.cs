@@ -14,64 +14,58 @@ namespace ToDo.Data
         public todosorsaContext(DbContextOptions<todosorsaContext> options)
             : base(options)
         {
-            //Database.EnsureCreated();
         }
 
-        public virtual DbSet<Aspnetrole> Aspnetroles { get; set; } = null!;
-        public virtual DbSet<Aspnetroleclaim> Aspnetroleclaims { get; set; } = null!;
-        public virtual DbSet<Aspnetuser> Aspnetusers { get; set; } = null!;
-        public virtual DbSet<Aspnetuserclaim> Aspnetuserclaims { get; set; } = null!;
-        public virtual DbSet<Aspnetuserlogin> Aspnetuserlogins { get; set; } = null!;
-        public virtual DbSet<Aspnetusertoken> Aspnetusertokens { get; set; } = null!;
-        public virtual DbSet<todo> Todos { get; set; } = null!;
-        public virtual DbSet<SharedTodo> SharedTodos { get; set; } = null!;
-        public virtual DbSet<todoMember> TodoMembers { get; set; } = null!;
+        public virtual DbSet<AspNetRole> AspNetRoles { get; set; } = null!;
+        public virtual DbSet<AspNetRoleClaim> AspNetRoleClaims { get; set; } = null!;
+        public virtual DbSet<AspNetUser> AspNetUsers { get; set; } = null!;
+        public virtual DbSet<AspNetUserClaim> AspNetUserClaims { get; set; } = null!;
+        public virtual DbSet<AspNetUserLogin> AspNetUserLogins { get; set; } = null!;
+        public virtual DbSet<AspNetUserToken> AspNetUserTokens { get; set; } = null!;
+
+        public virtual DbSet<ToDo.Data.todo> Todos { get; set; } = null!;
+        public virtual DbSet<ToDo.Data.SharedTodo> SharedTodos { get; set; } = null!;
+        public virtual DbSet<ToDo.Data.todoMember> TodoMembers { get; set; } = null!;
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
+            {
+
+            }
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.UseCollation("utf8mb4_general_ci")
-                .HasCharSet("utf8mb4");
-
-            modelBuilder.Entity<Aspnetrole>(entity =>
+            modelBuilder.Entity<AspNetRole>(entity =>
             {
-                entity.ToTable("aspnetroles");
-
                 entity.HasIndex(e => e.NormalizedName, "RoleNameIndex")
-                    .IsUnique();
+                    .IsUnique()
+                    .HasFilter("([NormalizedName] IS NOT NULL)");
 
                 entity.Property(e => e.Name).HasMaxLength(256);
 
                 entity.Property(e => e.NormalizedName).HasMaxLength(256);
             });
 
-            modelBuilder.Entity<Aspnetroleclaim>(entity =>
+            modelBuilder.Entity<AspNetRoleClaim>(entity =>
             {
-                entity.ToTable("aspnetroleclaims");
-
                 entity.HasIndex(e => e.RoleId, "IX_AspNetRoleClaims_RoleId");
 
-                entity.Property(e => e.Id).HasColumnType("int(11)");
-
                 entity.HasOne(d => d.Role)
-                    .WithMany(p => p.Aspnetroleclaims)
-                    .HasForeignKey(d => d.RoleId)
-                    .HasConstraintName("FK_AspNetRoleClaims_AspNetRoles_RoleId");
+                    .WithMany(p => p.AspNetRoleClaims)
+                    .HasForeignKey(d => d.RoleId);
             });
 
-            modelBuilder.Entity<Aspnetuser>(entity =>
+            modelBuilder.Entity<AspNetUser>(entity =>
             {
-                entity.ToTable("aspnetusers");
-
                 entity.HasIndex(e => e.NormalizedEmail, "EmailIndex");
 
                 entity.HasIndex(e => e.NormalizedUserName, "UserNameIndex")
-                    .IsUnique();
-
-                entity.Property(e => e.AccessFailedCount).HasColumnType("int(11)");
+                    .IsUnique()
+                    .HasFilter("([NormalizedUserName] IS NOT NULL)");
 
                 entity.Property(e => e.Email).HasMaxLength(256);
-
-                entity.Property(e => e.LockoutEnd).HasMaxLength(6);
 
                 entity.Property(e => e.NormalizedEmail).HasMaxLength(256);
 
@@ -82,40 +76,31 @@ namespace ToDo.Data
                 entity.HasMany(d => d.Roles)
                     .WithMany(p => p.Users)
                     .UsingEntity<Dictionary<string, object>>(
-                        "Aspnetuserrole",
-                        l => l.HasOne<Aspnetrole>().WithMany().HasForeignKey("RoleId").HasConstraintName("FK_AspNetUserRoles_AspNetRoles_RoleId"),
-                        r => r.HasOne<Aspnetuser>().WithMany().HasForeignKey("UserId").HasConstraintName("FK_AspNetUserRoles_AspNetUsers_UserId"),
+                        "AspNetUserRole",
+                        l => l.HasOne<AspNetRole>().WithMany().HasForeignKey("RoleId"),
+                        r => r.HasOne<AspNetUser>().WithMany().HasForeignKey("UserId"),
                         j =>
                         {
-                            j.HasKey("UserId", "RoleId").HasName("PRIMARY").HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                            j.HasKey("UserId", "RoleId");
 
-                            j.ToTable("aspnetuserroles");
+                            j.ToTable("AspNetUserRoles");
 
                             j.HasIndex(new[] { "RoleId" }, "IX_AspNetUserRoles_RoleId");
                         });
             });
 
-            modelBuilder.Entity<Aspnetuserclaim>(entity =>
+            modelBuilder.Entity<AspNetUserClaim>(entity =>
             {
-                entity.ToTable("aspnetuserclaims");
-
                 entity.HasIndex(e => e.UserId, "IX_AspNetUserClaims_UserId");
 
-                entity.Property(e => e.Id).HasColumnType("int(11)");
-
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.Aspnetuserclaims)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_AspNetUserClaims_AspNetUsers_UserId");
+                    .WithMany(p => p.AspNetUserClaims)
+                    .HasForeignKey(d => d.UserId);
             });
 
-            modelBuilder.Entity<Aspnetuserlogin>(entity =>
+            modelBuilder.Entity<AspNetUserLogin>(entity =>
             {
-                entity.HasKey(e => new { e.LoginProvider, e.ProviderKey })
-                    .HasName("PRIMARY")
-                    .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
-
-                entity.ToTable("aspnetuserlogins");
+                entity.HasKey(e => new { e.LoginProvider, e.ProviderKey });
 
                 entity.HasIndex(e => e.UserId, "IX_AspNetUserLogins_UserId");
 
@@ -124,27 +109,21 @@ namespace ToDo.Data
                 entity.Property(e => e.ProviderKey).HasMaxLength(128);
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.Aspnetuserlogins)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_AspNetUserLogins_AspNetUsers_UserId");
+                    .WithMany(p => p.AspNetUserLogins)
+                    .HasForeignKey(d => d.UserId);
             });
 
-            modelBuilder.Entity<Aspnetusertoken>(entity =>
+            modelBuilder.Entity<AspNetUserToken>(entity =>
             {
-                entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name })
-                    .HasName("PRIMARY")
-                    .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0, 0 });
-
-                entity.ToTable("aspnetusertokens");
+                entity.HasKey(e => new { e.UserId, e.LoginProvider, e.Name });
 
                 entity.Property(e => e.LoginProvider).HasMaxLength(128);
 
                 entity.Property(e => e.Name).HasMaxLength(128);
 
                 entity.HasOne(d => d.User)
-                    .WithMany(p => p.Aspnetusertokens)
-                    .HasForeignKey(d => d.UserId)
-                    .HasConstraintName("FK_AspNetUserTokens_AspNetUsers_UserId");
+                    .WithMany(p => p.AspNetUserTokens)
+                    .HasForeignKey(d => d.UserId);
             });
 
             OnModelCreatingPartial(modelBuilder);

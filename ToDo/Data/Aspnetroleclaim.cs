@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ToDo
+namespace ToDo.Data
 {
-    public partial class Aspnetroleclaim
+    public partial class AspNetRoleClaim
     {
         public int Id { get; set; }
         public string RoleId { get; set; } = null!;
         public string? ClaimType { get; set; }
         public string? ClaimValue { get; set; }
 
-        public virtual Aspnetrole Role { get; set; } = null!;
+        public virtual AspNetRole Role { get; set; } = null!;
     }
 }

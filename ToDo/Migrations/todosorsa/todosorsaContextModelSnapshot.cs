@@ -2,12 +2,13 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ToDo.Data;
 
 #nullable disable
 
-namespace ToDo.Migrations
+namespace ToDo.Migrations.todosorsa
 {
     [DbContext(typeof(todosorsaContext))]
     partial class todosorsaContextModelSnapshot : ModelSnapshot
@@ -16,208 +17,206 @@ namespace ToDo.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .UseCollation("utf8mb4_general_ci")
                 .HasAnnotation("ProductVersion", "6.0.3")
-                .HasAnnotation("Relational:MaxIdentifierLength", 64);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            MySqlModelBuilderExtensions.HasCharSet(modelBuilder, "utf8mb4");
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("Aspnetuserrole", b =>
+            modelBuilder.Entity("AspNetUserRole", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("RoleId")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("UserId", "RoleId")
-                        .HasName("PRIMARY")
-                        .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                    b.HasKey("UserId", "RoleId");
 
                     b.HasIndex(new[] { "RoleId" }, "IX_AspNetUserRoles_RoleId");
 
-                    b.ToTable("aspnetuserroles", (string)null);
+                    b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetrole", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetRole", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "NormalizedName" }, "RoleNameIndex")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("([NormalizedName] IS NOT NULL)");
 
-                    b.ToTable("aspnetroles", (string)null);
+                    b.ToTable("AspNetRoles");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetroleclaim", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetRoleClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("RoleId")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "RoleId" }, "IX_AspNetRoleClaims_RoleId");
 
-                    b.ToTable("aspnetroleclaims", (string)null);
+                    b.ToTable("AspNetRoleClaims");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetuser", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUser", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("int(11)");
+                        .HasColumnType("int");
 
                     b.Property<string>("ConcurrencyStamp")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
-                    b.Property<DateTime?>("LockoutEnd")
-                        .HasMaxLength(6)
-                        .HasColumnType("datetime(6)");
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("varchar(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "NormalizedEmail" }, "EmailIndex");
 
                     b.HasIndex(new[] { "NormalizedUserName" }, "UserNameIndex")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("([NormalizedUserName] IS NOT NULL)");
 
-                    b.ToTable("aspnetusers", (string)null);
+                    b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetuserclaim", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUserClaim", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int(11)");
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
                     b.HasIndex(new[] { "UserId" }, "IX_AspNetUserClaims_UserId");
 
-                    b.ToTable("aspnetuserclaims", (string)null);
+                    b.ToTable("AspNetUserClaims");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetuserlogin", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUserLogin", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderKey")
                         .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("UserId")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("LoginProvider", "ProviderKey")
-                        .HasName("PRIMARY")
-                        .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0 });
+                    b.HasKey("LoginProvider", "ProviderKey");
 
                     b.HasIndex(new[] { "UserId" }, "IX_AspNetUserLogins_UserId");
 
-                    b.ToTable("aspnetuserlogins", (string)null);
+                    b.ToTable("AspNetUserLogins");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetusertoken", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUserToken", b =>
                 {
                     b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("LoginProvider")
                         .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Name")
                         .HasMaxLength(128)
-                        .HasColumnType("varchar(128)");
+                        .HasColumnType("nvarchar(128)");
 
                     b.Property<string>("Value")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("UserId", "LoginProvider", "Name")
-                        .HasName("PRIMARY")
-                        .HasAnnotation("MySql:IndexPrefixLength", new[] { 0, 0, 0 });
+                    b.HasKey("UserId", "LoginProvider", "Name");
 
-                    b.ToTable("aspnetusertokens", (string)null);
+                    b.ToTable("AspNetUserTokens");
                 });
 
             modelBuilder.Entity("ToDo.Data.SharedTodo", b =>
@@ -226,16 +225,18 @@ namespace ToDo.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
                     b.Property<string>("Kuvaus")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Luoja")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Luotu")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -248,25 +249,27 @@ namespace ToDo.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
                     b.Property<string>("Kuvaus")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Luoja")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Luotu")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime>("Muokattu")
-                        .HasColumnType("datetime(6)");
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Muokkaaja")
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Personal")
-                        .HasColumnType("tinyint(1)");
+                        .HasColumnType("bit");
 
                     b.Property<int?>("SharedTodoId")
                         .HasColumnType("int");
@@ -287,9 +290,11 @@ namespace ToDo.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SharedTodoId")
                         .HasColumnType("int");
@@ -301,67 +306,61 @@ namespace ToDo.Migrations
                     b.ToTable("TodoMembers");
                 });
 
-            modelBuilder.Entity("Aspnetuserrole", b =>
+            modelBuilder.Entity("AspNetUserRole", b =>
                 {
-                    b.HasOne("ToDo.Aspnetrole", null)
+                    b.HasOne("ToDo.Data.AspNetRole", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_AspNetUserRoles_AspNetRoles_RoleId");
+                        .IsRequired();
 
-                    b.HasOne("ToDo.Aspnetuser", null)
+                    b.HasOne("ToDo.Data.AspNetUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_AspNetUserRoles_AspNetUsers_UserId");
+                        .IsRequired();
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetroleclaim", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetRoleClaim", b =>
                 {
-                    b.HasOne("ToDo.Aspnetrole", "Role")
-                        .WithMany("Aspnetroleclaims")
+                    b.HasOne("ToDo.Data.AspNetRole", "Role")
+                        .WithMany("AspNetRoleClaims")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_AspNetRoleClaims_AspNetRoles_RoleId");
+                        .IsRequired();
 
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetuserclaim", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUserClaim", b =>
                 {
-                    b.HasOne("ToDo.Aspnetuser", "User")
-                        .WithMany("Aspnetuserclaims")
+                    b.HasOne("ToDo.Data.AspNetUser", "User")
+                        .WithMany("AspNetUserClaims")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_AspNetUserClaims_AspNetUsers_UserId");
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetuserlogin", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUserLogin", b =>
                 {
-                    b.HasOne("ToDo.Aspnetuser", "User")
-                        .WithMany("Aspnetuserlogins")
+                    b.HasOne("ToDo.Data.AspNetUser", "User")
+                        .WithMany("AspNetUserLogins")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_AspNetUserLogins_AspNetUsers_UserId");
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetusertoken", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUserToken", b =>
                 {
-                    b.HasOne("ToDo.Aspnetuser", "User")
-                        .WithMany("Aspnetusertokens")
+                    b.HasOne("ToDo.Data.AspNetUser", "User")
+                        .WithMany("AspNetUserTokens")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("FK_AspNetUserTokens_AspNetUsers_UserId");
+                        .IsRequired();
 
                     b.Navigation("User");
                 });
@@ -384,18 +383,18 @@ namespace ToDo.Migrations
                     b.Navigation("SharedTodo");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetrole", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetRole", b =>
                 {
-                    b.Navigation("Aspnetroleclaims");
+                    b.Navigation("AspNetRoleClaims");
                 });
 
-            modelBuilder.Entity("ToDo.Aspnetuser", b =>
+            modelBuilder.Entity("ToDo.Data.AspNetUser", b =>
                 {
-                    b.Navigation("Aspnetuserclaims");
+                    b.Navigation("AspNetUserClaims");
 
-                    b.Navigation("Aspnetuserlogins");
+                    b.Navigation("AspNetUserLogins");
 
-                    b.Navigation("Aspnetusertokens");
+                    b.Navigation("AspNetUserTokens");
                 });
 
             modelBuilder.Entity("ToDo.Data.SharedTodo", b =>

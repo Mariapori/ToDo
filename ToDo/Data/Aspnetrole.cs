@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ToDo
+namespace ToDo.Data
 {
-    public partial class Aspnetrole
+    public partial class AspNetRole
     {
-        public Aspnetrole()
+        public AspNetRole()
         {
-            Aspnetroleclaims = new HashSet<Aspnetroleclaim>();
-            Users = new HashSet<Aspnetuser>();
+            AspNetRoleClaims = new HashSet<AspNetRoleClaim>();
+            Users = new HashSet<AspNetUser>();
         }
 
         public string Id { get; set; } = null!;
@@ -16,8 +16,8 @@ namespace ToDo
         public string? NormalizedName { get; set; }
         public string? ConcurrencyStamp { get; set; }
 
-        public virtual ICollection<Aspnetroleclaim> Aspnetroleclaims { get; set; }
+        public virtual ICollection<AspNetRoleClaim> AspNetRoleClaims { get; set; }
 
-        public virtual ICollection<Aspnetuser> Users { get; set; }
+        public virtual ICollection<AspNetUser> Users { get; set; }
     }
 }

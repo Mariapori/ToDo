@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace ToDo
+namespace ToDo.Data
 {
-    public partial class Aspnetuser
+    public partial class AspNetUser
     {
-        public Aspnetuser()
+        public AspNetUser()
         {
-            Aspnetuserclaims = new HashSet<Aspnetuserclaim>();
-            Aspnetuserlogins = new HashSet<Aspnetuserlogin>();
-            Aspnetusertokens = new HashSet<Aspnetusertoken>();
-            Roles = new HashSet<Aspnetrole>();
+            AspNetUserClaims = new HashSet<AspNetUserClaim>();
+            AspNetUserLogins = new HashSet<AspNetUserLogin>();
+            AspNetUserTokens = new HashSet<AspNetUserToken>();
+            Roles = new HashSet<AspNetRole>();
         }
 
         public string Id { get; set; } = null!;
@@ -25,14 +25,14 @@ namespace ToDo
         public string? PhoneNumber { get; set; }
         public bool PhoneNumberConfirmed { get; set; }
         public bool TwoFactorEnabled { get; set; }
-        public DateTime? LockoutEnd { get; set; }
+        public DateTimeOffset? LockoutEnd { get; set; }
         public bool LockoutEnabled { get; set; }
         public int AccessFailedCount { get; set; }
 
-        public virtual ICollection<Aspnetuserclaim> Aspnetuserclaims { get; set; }
-        public virtual ICollection<Aspnetuserlogin> Aspnetuserlogins { get; set; }
-        public virtual ICollection<Aspnetusertoken> Aspnetusertokens { get; set; }
+        public virtual ICollection<AspNetUserClaim> AspNetUserClaims { get; set; }
+        public virtual ICollection<AspNetUserLogin> AspNetUserLogins { get; set; }
+        public virtual ICollection<AspNetUserToken> AspNetUserTokens { get; set; }
 
-        public virtual ICollection<Aspnetrole> Roles { get; set; }
+        public virtual ICollection<AspNetRole> Roles { get; set; }
     }
 }
