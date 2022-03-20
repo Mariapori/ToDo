@@ -3,9 +3,11 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using ToDo.Areas.Identity;
 using ToDo.Data;
+using ToDo.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,12 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+builder.Services.AddResponseCompression(opts =>
+{
+    opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+        new[] { "application/octet-stream" });
+});
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -36,6 +44,8 @@ else
     app.UseHsts();
 }
 
+
+app.UseResponseCompression();
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -47,6 +57,7 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapBlazorHub();
+app.MapHub<SharedTodoHub>("/sharedtodohub");
 app.MapFallbackToPage("/_Host");
 
 app.Run();

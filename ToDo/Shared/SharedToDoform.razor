@@ -1,9 +1,11 @@
 ﻿@using Microsoft.EntityFrameworkCore
 @using ToDo.Data
+@using Microsoft.AspNetCore.SignalR.Client
 @implements IDisposable
 @inject AuthenticationStateProvider context
 @inject IDbContextFactory<todosorsaContext> DbFactory
 @inject IJSRuntime JSRuntime
+@inject NavigationManager NavigationManager
 
 
 @if(todoMembers == null)
@@ -129,6 +131,7 @@
 
 
 @code {
+    private HubConnection? hubConnection;
     private string? kuvaus;
     private string? user;
     private todosorsaContext? db;
@@ -149,14 +152,53 @@
         db = await DbFactory.CreateDbContextAsync();
         memberOf = db.TodoMembers.Include(o => o.SharedTodo).Where(o => o.Email == user).Select(o => o.SharedTodo.Id).ToList();
         Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user || memberOf.Contains(o.Id)).ToList();
+
+        hubConnection = new HubConnectionBuilder()
+           .WithUrl(NavigationManager.ToAbsoluteUri("/sharedtodohub"))
+           .Build();
+
+        hubConnection.On<todo, int>("UusiTodo", (todo, sharedtodoID) =>
+        {
+            if (memberOf.Contains(sharedtodoID) && valittu?.Id == sharedtodoID)
+            {
+                valittu?.Tehtavat.Add(todo);
+                StateHasChanged();
+            }
+        });
+
+         hubConnection.On<todo, int>("RemTodo", (todo, sharedtodoID) =>
+        {
+            if (memberOf.Contains(sharedtodoID) && valittu?.Id == sharedtodoID)
+            {
+                valittu?.Tehtavat.Remove(todo);
+                StateHasChanged();
+            }
+        });
+
+                 hubConnection.On<todo, int, Tila>("UpdateTodo", (todo, sharedtodoID, uusTila) =>
+        {
+            if (memberOf.Contains(sharedtodoID) && valittu?.Id == sharedtodoID)
+            {
+                var vanha = valittu?.Tehtavat.FirstOrDefault(o => o.Id == todo.Id);
+                vanha = todo;
+                StateHasChanged();
+            }
+        });
+
+
+
+
+        await hubConnection.StartAsync();
     }
+    public bool IsConnected =>
+        hubConnection?.State == HubConnectionState.Connected;
 
     protected override void OnAfterRender(bool firstRender)
     {
         Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user || memberOf.Contains(o.Id)).ToList();
     }
 
-    public void LisaaTehtava()
+    public async void LisaaTehtava()
     {
         var todo = new todo();
         todo.Kuvaus = kuvaus;
@@ -168,6 +210,11 @@
         valittu.Tehtavat.Add(todo);
         db.SaveChanges();
         kuvaus = null;
+        if(hubConnection != null)
+        {
+         await hubConnection.SendAsync("AddTodo", todo, valittu?.Id);
+        }
+
     }
 
     public void LisaaJaettuTodo()
@@ -197,7 +244,7 @@
             drag = raahattu;
         }
     }
-    public void Tiputa(Tila tila)
+    public async void Tiputa(Tila tila)
     {
 
         if(drag != null && tila != drag.Tila)
@@ -209,15 +256,23 @@
             db.SaveChanges();
             drag = null;
             StateHasChanged();
+            if(hubConnection != null)
+            {
+            await hubConnection.SendAsync("UpdateTodo", drag, valittu?.Id, drag?.Tila);
+            }
         }
     }
 
-    public void Poista(todo poistettava)
+    public async void Poista(todo poistettava)
     {
         if(poistettava != null)
         {
             valittu.Tehtavat.Remove(poistettava);
             db.SaveChanges();
+            if(hubConnection != null)
+            {
+            await hubConnection.SendAsync("RemTodo", poistettava, valittu?.Id);
+            }
         }
 
     }

@@ -14,6 +14,7 @@ namespace ToDo.Data
         public todosorsaContext(DbContextOptions<todosorsaContext> options)
             : base(options)
         {
+            Database.EnsureCreated();
         }
 
         public virtual DbSet<AspNetRole> AspNetRoles { get; set; } = null!;
