@@ -2,6 +2,7 @@
 @using ToDo.Data
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IDisposable
+@implements IAsyncDisposable
 @inject AuthenticationStateProvider context
 @inject IDbContextFactory<todosorsaContext> DbFactory
 @inject IJSRuntime JSRuntime
@@ -154,12 +155,13 @@
         Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user || memberOf.Contains(o.Id)).ToList();
 
         hubConnection = new HubConnectionBuilder()
-           .WithUrl(NavigationManager.ToAbsoluteUri("/sharedtodohub"))
+           .WithUrl(NavigationManager.ToAbsoluteUri("/todohub"))
+           .WithAutomaticReconnect()
            .Build();
 
         hubConnection.On<todo, int>("UusiTodo", (todo, sharedtodoID) =>
         {
-            if (memberOf.Contains(sharedtodoID) && valittu?.Id == sharedtodoID)
+            if (valittu != null && valittu?.Id == sharedtodoID)
             {
                 valittu?.Tehtavat.Add(todo);
                 StateHasChanged();
@@ -168,7 +170,7 @@
 
          hubConnection.On<todo, int>("RemTodo", (todo, sharedtodoID) =>
         {
-            if (memberOf.Contains(sharedtodoID) && valittu?.Id == sharedtodoID)
+            if (valittu != null && valittu?.Id == sharedtodoID)
             {
                 valittu?.Tehtavat.Remove(todo);
                 StateHasChanged();
@@ -177,7 +179,7 @@
 
                  hubConnection.On<todo, int, Tila>("UpdateTodo", (todo, sharedtodoID, uusTila) =>
         {
-            if (memberOf.Contains(sharedtodoID) && valittu?.Id == sharedtodoID)
+            if (valittu != null && valittu?.Id == sharedtodoID)
             {
                 var vanha = valittu?.Tehtavat.FirstOrDefault(o => o.Id == todo.Id);
                 vanha = todo;
@@ -189,8 +191,9 @@
 
 
         await hubConnection.StartAsync();
+
     }
-    public bool IsConnected =>
+        public bool IsConnected =>
         hubConnection?.State == HubConnectionState.Connected;
 
     protected override void OnAfterRender(bool firstRender)
@@ -198,7 +201,7 @@
         Todos = db.SharedTodos.Include(o => o.Tehtavat).Include(o => o.Jasenet).Where(o => o.Luoja == user || memberOf.Contains(o.Id)).ToList();
     }
 
-    public async void LisaaTehtava()
+    public async Task LisaaTehtava()
     {
         var todo = new todo();
         todo.Kuvaus = kuvaus;
@@ -210,7 +213,7 @@
         valittu.Tehtavat.Add(todo);
         db.SaveChanges();
         kuvaus = null;
-        if(hubConnection != null)
+        if(hubConnection != null && hubConnection.State == HubConnectionState.Connected)
         {
          await hubConnection.SendAsync("AddTodo", todo, valittu?.Id);
         }
@@ -244,7 +247,7 @@
             drag = raahattu;
         }
     }
-    public async void Tiputa(Tila tila)
+    public async Task Tiputa(Tila tila)
     {
 
         if(drag != null && tila != drag.Tila)
@@ -256,20 +259,20 @@
             db.SaveChanges();
             drag = null;
             StateHasChanged();
-            if(hubConnection != null)
+            if(hubConnection != null && hubConnection.State == HubConnectionState.Connected)
             {
             await hubConnection.SendAsync("UpdateTodo", drag, valittu?.Id, drag?.Tila);
             }
         }
     }
 
-    public async void Poista(todo poistettava)
+    public async Task Poista(todo poistettava)
     {
         if(poistettava != null)
         {
             valittu.Tehtavat.Remove(poistettava);
             db.SaveChanges();
-            if(hubConnection != null)
+            if(hubConnection != null && hubConnection.State == HubConnectionState.Connected)
             {
             await hubConnection.SendAsync("RemTodo", poistettava, valittu?.Id);
             }
@@ -302,14 +305,21 @@
         bool onko = Boolean.Parse(args.Value.ToString());
         if(onko)
         {
-            alkuperaiset = valittu.Tehtavat;
-            valittu.Tehtavat = valittu.Tehtavat.Where(o => o.Luoja == user).ToList();
+            alkuperaiset = valittu?.Tehtavat;
+            valittu.Tehtavat = valittu?.Tehtavat.Where(o => o.Luoja == user).ToList();
         }
         else
         {
             valittu.Tehtavat = alkuperaiset;
         }
-
+            
+    }
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
     }
 
 }
